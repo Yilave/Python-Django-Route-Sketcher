@@ -15,6 +15,7 @@
 
 # importing geopy library and Nominatim class
 from geopy.geocoders import Nominatim
+from geopy.distance import geodesic
 
 # calling the Nominatim tool and create Nominatim class
 loc = Nominatim(user_agent="Geopy Library")

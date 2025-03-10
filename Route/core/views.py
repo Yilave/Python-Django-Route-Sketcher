@@ -64,7 +64,7 @@ def index(request):
 
 
 def get_route_api(request):
-    post_body = json.loades(request.body)
+    post_body = json.loads(request.body)
     origin = post_body['origin']
     destination = post_body['destination']
     data = get_route(origin, destination)

@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 import json
 from API.route_plotter import get_route
 import plotly.express as px
@@ -11,17 +12,18 @@ from plotly.offline import plot
 def index(request):
     context = {}
     template = "index.html"
-    if request.method == "POST":
-        try:
+    try:
+        if request.method == "POST":
             origin = request.POST['origin']
             destination = request.POST['dest']
-            data = get_route(origin, destination)
+            # Here we are getting the Python Dictionary
+            data = get_route(origin, destination, response_type=None)
             # nodes = data['']
             df = data['data']
             longitude = data['lon']
             latitude = data['lat']
             
-                # Plotting the coordinates on map
+            # Plotting the route and coordinates on map
             fig = go.Figure()
             color_scale = [(0, 'red'), (1,'green')]
             fig = px.line_mapbox(df, 
@@ -56,16 +58,19 @@ def index(request):
             context['origin'] = origin
             context['destination'] = destination
 
-            return render(request, template, context)
-        except:
-            messages.error(request, "Coult not find places on Map. Please make sure you enter a valid location")
-            return redirect('/')
-    return render(request, template, context)
+        return render(request, template, context)
+    except:
+        messages.error(request, "Coult not find places on Map. Please make sure you enter a valid location")
+        return render(request, template)
 
 
+# Api endpoint to return a Json data
+@csrf_exempt
 def get_route_api(request):
-    post_body = json.loads(request.body)
-    origin = post_body['origin']
-    destination = post_body['destination']
-    data = get_route(origin, destination)
-    return JsonResponse(data)
+    if request.method == "POST":
+        origin = request.GET.get('origin')
+        destination = request.GET.get('destination')
+        
+        data = get_route(origin, destination, response_type="Json")
+
+        return data
